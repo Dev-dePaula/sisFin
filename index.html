@@ -3,75 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Controle - Padaria</title>
+    <title>Sistema de Gestão - Comunidade Sol</title>
     <style>
         :root { --primary: #2c3e50; --success: #27ae60; --danger: #e74c3c; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; display: flex; justify-content: center; padding: 20px; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        h1 { color: var(--primary); text-align: center; font-size: 24px; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 650px; }
+        h1 { color: var(--primary); text-align: center; }
+        label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
         button { background: var(--primary); color: white; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
         button:hover { opacity: 0.9; }
         .hidden { display: none; }
-        .card { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 5px solid var(--success); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .total-box { background: var(--success); color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
-        th { background: #f4f4f4; }
-        .total-box { background: var(--success); color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        th { background: #f4f4f4; color: #333; }
+        
+        /* Estilos para PDF / Impressão */
+        @media print {
+            .no-print, button, input, select, label { display: none !important; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
+            body { background: white; padding: 0; }
+            h1 { font-size: 20px; margin-top: 0; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="login-screen">
+    <div id="login-screen" class="no-print">
         <h1>🔐 Acesso ao Sistema</h1>
-        <p style="text-align: center; color: #666;">Entre para registrar ou conferir as notas</p>
-        <input type="email" id="email" placeholder="Seu e-mail">
-        <input type="password" id="password" placeholder="Sua senha">
-        <button id="btnLogin">Entrar no Sistema</button>
+        <input type="email" id="email" placeholder="E-mail do Educador ou ADM">
+        <input type="password" id="password" placeholder="Senha">
+        <button id="btnLogin">Entrar</button>
     </div>
 
-    <div id="educador-screen" class="hidden">
-        <h1>🍞 Registrar Pão Diário</h1>
-        <div class="card">
-            <label>Valor da Nota (R$):</label>
-            <input type="number" id="valorNota" step="0.01" placeholder="Ex: 15.50">
-            <label>Foto do Comprovante:</label>
-            <input type="file" id="fotoNota" accept="image/*" capture="camera">
-            <button id="btnSalvar" style="background: var(--success);">Enviar para o ADM</button>
+    <div id="educador-screen" class="hidden no-print">
+        <h1>📝 Lançamento Diário</h1>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+            <label>O que foi comprado?</label>
+            <select id="descricao">
+                <option value="Pão">🍞 Pão</option>
+                <option value="Gás">🔥 Gás</option>
+                <option value="Outros">Outros</option>
+            </select>
+
+            <label>Valor (R$):</label>
+            <input type="number" id="valor" step="0.01" placeholder="Ex: 25.50">
+
+            <label>Data da Compra:</label>
+            <input type="date" id="dataCompra">
+
+            <button id="btnSalvar" style="background: var(--success); margin-top: 15px;">Salvar Lançamento</button>
         </div>
         <button onclick="deslogar()" style="background:#666; margin-top: 20px;">Sair</button>
     </div>
 
     <div id="adm-screen" class="hidden">
-        <h1>📊 Painel Administrativo</h1>
+        <h1>📊 Relatório Administrativo</h1>
+        
         <div class="total-box">
-            <span>Total Acumulado do Mês</span>
+            <span>SOMA TOTAL ACUMULADA</span>
             <h2 id="somaTotal">R$ 0,00</h2>
         </div>
+        
+        <div class="no-print" style="display: flex; gap: 10px;">
+            <button onclick="window.print()" style="background: #3498db;">🖨️ Gerar PDF / Imprimir</button>
+            <button onclick="deslogar()" style="background:#666">Sair</button>
+        </div>
+
         <table>
             <thead>
                 <tr>
                     <th>Data</th>
+                    <th>Descrição</th>
                     <th>Valor</th>
-                    <th>Comprovante</th>
                 </tr>
             </thead>
             <tbody id="tabelaCorpo"></tbody>
         </table>
-        <button id="btnLimpar" style="background: var(--danger); margin-top: 20px;">Fechar Mês (Zerar)</button>
-        <button onclick="deslogar()" style="background:#666">Sair</button>
+        
+        <div class="no-print">
+            <button id="btnLimpar" style="background: var(--danger); margin-top: 40px;">Zerar Dados (Fechamento do Mês)</button>
+        </div>
     </div>
 </div>
 
 <script type="module">
-    // IMPORTAÇÃO DOS MÓDULOS DO FIREBASE
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
 
-    // SEU CONFIG QUE VOCÊ GEROU
+    // Sua Configuração Original
     const firebaseConfig = {
         apiKey: "AIzaSyB4zx_wjPAp1tQJKPe8K-QNDCESbNr72n8",
         authDomain: "controle-pao.firebaseapp.com",
@@ -81,35 +104,28 @@
         appId: "1:1083052763574:web:0c0a41f41441fcf495f917"
     };
 
-    // INICIALIZAÇÃO
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const storage = getStorage(app);
 
-    // --- LÓGICA DE INTERFACE ---
-
-    // Login
+    // LOGIN
     document.getElementById('btnLogin').addEventListener('click', async () => {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
         try {
             await signInWithEmailAndPassword(auth, email, pass);
-        } catch (error) {
-            alert("Erro ao entrar: Verifique e-mail e senha.");
-        }
+        } catch (e) { alert("Usuário ou senha incorretos."); }
     });
 
-    // Monitorar quem está logado
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('login-screen').classList.add('hidden');
-            // SE O EMAIL FOR DO ADM (MUDE AQUI SEU EMAIL DE ADM)
-            if (user.email === 'adm@email.com') {
+            if (user.email === 'adm@email.com') { // AJUSTE SEU E-MAIL DE ADM AQUI
                 document.getElementById('adm-screen').classList.remove('hidden');
                 carregarDadosAdm();
             } else {
                 document.getElementById('educador-screen').classList.remove('hidden');
+                document.getElementById('dataCompra').valueAsDate = new Date();
             }
         } else {
             document.getElementById('login-screen').classList.remove('hidden');
@@ -118,61 +134,57 @@
         }
     });
 
-    // Função Sair (acessível globalmente)
     window.deslogar = () => signOut(auth);
 
-    // --- LÓGICA DO EDUCADOR (SALVAR) ---
+    // SALVAR DADOS (EDUCADOR)
     document.getElementById('btnSalvar').addEventListener('click', async () => {
-        const valor = parseFloat(document.getElementById('valorNota').value);
-        const file = document.getElementById('fotoNota').files[0];
+        const valor = parseFloat(document.getElementById('valor').value);
+        const data = document.getElementById('dataCompra').value;
+        const desc = document.getElementById('descricao').value;
 
-        if (!valor || !file) return alert("Por favor, preencha o valor e tire a foto!");
+        if (!valor || !data) return alert("Preencha o valor e a data!");
 
         try {
-            // 1. Sobe a foto para o Storage
-            const storageRef = ref(storage, `comprovantes/${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(snapshot.ref);
-
-            // 2. Salva os dados no Firestore
-            await addDoc(collection(db, "registros_pao"), {
+            await addDoc(collection(db, "financeiro_pao"), {
                 valor: valor,
-                fotoUrl: url,
-                data: new Date().toLocaleDateString('pt-BR'),
+                dataCompra: data,
+                descricao: desc,
                 criadoEm: serverTimestamp()
             });
-
-            alert("✅ Enviado com sucesso!");
-            document.getElementById('valorNota').value = "";
-            document.getElementById('fotoNota').value = "";
-        } catch (e) {
-            console.error(e);
-            alert("Erro ao salvar dados.");
-        }
+            alert("✅ Lançamento realizado com sucesso!");
+            document.getElementById('valor').value = "";
+        } catch (e) { alert("Erro ao salvar dados."); }
     });
 
-    // --- LÓGICA DO ADM (LER E SOMAR) ---
+    // CARREGAR RELATÓRIO (ADM)
     function carregarDadosAdm() {
-        const q = query(collection(db, "registros_pao"), orderBy("criadoEm", "desc"));
+        const q = query(collection(db, "financeiro_pao"), orderBy("dataCompra", "desc"));
         onSnapshot(q, (snapshot) => {
             let html = "";
             let total = 0;
             snapshot.forEach((doc) => {
                 const item = doc.data();
                 total += item.valor;
-                html += `
-                    <tr>
-                        <td>${item.data}</td>
-                        <td>R$ ${item.valor.toFixed(2)}</td>
-                        <td><a href="${item.fotoUrl}" target="_blank">Ver Foto</a></td>
-                    </tr>
-                `;
+                const dataFormatada = item.dataCompra.split('-').reverse().join('/');
+                html += `<tr>
+                    <td>${dataFormatada}</td>
+                    <td>${item.descricao}</td>
+                    <td>R$ ${item.valor.toFixed(2)}</td>
+                </tr>`;
             });
             document.getElementById('tabelaCorpo').innerHTML = html;
             document.getElementById('somaTotal').innerText = `R$ ${total.toFixed(2)}`;
         });
     }
-</script>
 
+    // ZERAR MES
+    document.getElementById('btnLimpar').addEventListener('click', async () => {
+        if(confirm("Deseja realmente apagar todos os dados para iniciar o novo mês?")){
+            const snap = await getDocs(collection(db, "financeiro_pao"));
+            snap.forEach(async (d) => await deleteDoc(doc(db, "financeiro_pao", d.id)));
+            alert("Sistema zerado!");
+        }
+    });
+</script>
 </body>
 </html>
